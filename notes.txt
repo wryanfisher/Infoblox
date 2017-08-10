@@ -1,0 +1,425 @@
+Great source of REST examples here: https://community.infoblox.com/t5/API-Integration/The-definitive-list-of-REST-examples/td-p/1214
+
+Search for HOST by name:
+
+ GET /wapi/v1.2/record:host?name~=my.fqdn.org
+
+Search for FixedAddress by MAC
+
+ GET /wapi/v1.2/fixedaddress?_return_fields%2B=mac&mac=aa:bb:cc:11:22:33
+
+Search for any objects with an IP address
+
+ GET /wapi/v1.2/ipv4address?status=USED&ip_address=1.1.1.1
+
+Add a HOST
+
+ POST /wapi/v1.2/record:host
+ Content-Type: application/json
+
+    { "name":"wapi.test.org",
+      "ipv4addrs":[
+          {
+             "ipv4addr":"1.1.1.21"
+          }
+        ]
+    }
+
+Delete a host
+( you need the _ref to the host first )
+
+ DELETE /wapi/v1.2/record:host/ZG5zLmhvc3QkLl9kZWZhdWx0Lm9yZy5naC53YXBp
+
+Update a host, or change the IP address
+( you need the _ref to the host first )
+
+ PUT /record:host/ZG5zLmhvc3QkLl9kZWZhdWx0Lm9yZy5naC53YXBp
+ Content-Type: application/json
+
+ { 
+    "ipv4addrs":[
+          { "ipv4addr":"1.1.1.31" }
+     ]
+ }
+
+Add or remove IP addresses from a HOST
+( without altering the original list )
+Use 'ipv4addrs+' or 'ipv4addrs-'
+
+ PUT /record:host/ZG5zLmhvc3QkLl9kZWZhdWx0Lm9yZy5naC53YXBp
+ Content-Type: application/json
+
+ { 
+    "ipv4addrs+":[
+          { "ipv4addr":"2.2.2.22" }
+          { "ipv4addr":"4.4.4.24" }
+     ]
+ }
+
+ PUT /record:host/ZG5zLmhvc3QkLl9kZWZhdWx0Lm9yZy5naC53YXBp
+ Content-Type: application/json
+
+ { 
+    "ipv4addrs-":[
+          { "ipv4addr":"3.3.3.33" }
+     ]
+ }
+
+Add a HOST with next_available IP address from a network
+
+ POST /wapi/v1.2/record:host
+ Content-Type: application/json
+
+    { "name":"wapi.test.org",
+      "ipv4addrs":[
+          {
+             "ipv4addr":"func:nextavailableip:10.1.1.0/24"
+          }
+        ]
+    }
+
+'func:' syntax also supports these forms:
+
+    func:nextavailableip:network/ZG54dfgsrDFEFfsfsLzA:10.0.0.0/8/default
+    func:nextavailableip:10.0.0.0/8
+    func:nextavailableip:10.0.0.0/8,external
+    func:nextavailableip:10.0.0.3-10.0.0.10
+
+OR you can use the longhand form:
+
+ POST /wapi/v1.2/record:host
+ Content-Type: application/json
+
+    { "name":"wapi.test.org",
+      "ipv4addrs":[
+            ipv4addr" : {
+                "_function" : 'next_available_ip' ,
+                "_object_field" : 'value' ,
+                "_object" : '10.10.10.0/24' ,
+                "_parameters" : {
+                   "num" : 1,
+                   "exclude" : [ '45.0.1.1' , '45.0.1.2' ],
+                }
+            }
+        ]
+    }
+
+Add a HOST with next_available IP address from a network
+using a complex search ( e.g Extensible Attributes ).
+
+You need to pass the search criteria in the _object_parameters field
+not also that '_object' changes from a reference to a type
+
+ POST /wapi/v1.2/record:host
+ Content-Type: application/json
+
+    { "name":"wapi.test.org",
+      "ipv4addrs":[
+            ipv4addr" : {
+                "_function" : 'next_available_ip' ,
+                "_object_field" : 'value' ,
+                "_object" : 'network'
+                "_object_parameters" : {
+                    "*Site" : "Santa Clara"
+                },
+                "_parameters" : {
+                   "num" : 1,
+                   "exclude" : [ '45.0.1.1' , '45.0.1.2' ],
+                }
+            }
+        ]
+    }
+
+Add a HOST with a fixed address
+
+ POST /wapi/v1.2/record:host
+ Content-Type: application/json
+
+    { "name":"wapi.test.org",
+      "ipv4addrs":[
+          {
+             "ipv4addr":"1.1.1.21",
+             "mac":"aa:bb:cc:11:22:21"
+          }
+        ]
+    }
+
+Add a Fixed address
+
+ POST /wapi/v1.2/fixedaddress
+ Content-Type: application/json
+
+ { 
+     "ipv4addr": "1.1.1.21",
+     "mac": "aa:bb:cc:11:22:21"
+ }
+
+Add a Fixed address Reservtion
+
+ POST /wapi/v1.2/fixedaddress
+ Content-Type: application/json
+
+ { 
+     "ipv4addr": "1.1.1.21",
+     "mac": "00:00:00:00:00:00"
+ }
+
+Search for a subnet
+
+ GET /wapi/v1.2/network?network=1.1.1.0/24
+
+Get Next Available address from a subnet
+( you need the _ref to the subnet first )
+
+ POST /wapi/v1.2/network/ZG5zLm5ldHdvcmsuMC8yNC83?_function=next_available_ip
+ Content-Type: application/json
+
+  {"num": 1}
+
+Get the next 5 IP addresses
+( you need the _ref to the subnet first )
+
+ POST /wapi/v1.2/network/ZG5zLm5ldHdvcmsuMC8yNC83?_function=next_available_ip
+ Content-Type: application/json
+
+  {"num": 5}
+
+
+Get all the addresses (and records) in a subnet
+
+  GET /wapi/v1.2/ipv4address?network=1.1.1.0/24
+
+Get all the IP addresses in a given range
+
+  GET /wapi/v1.2/ipv4address?ip_address>=1.1.1.1&ip_address<=1.1.1.10
+
+Search for HOSTS by Extensible Attribute
+  ( prepend '*' to the front of the EA name )
+
+  GET /wapi/v1.2/record:host?_return_fields%2B=extattrs&*Floor=3rd
+
+Add extensible Attributes to an object
+
+ PUT /wapi/v1.2/record:host/ZG5zLmhvc....
+ Content-Type: application/json
+
+ {  
+   "extattrs": {
+      "Site": { "value": "East" }
+   }
+ }
+
+Add a HOST with aliases
+
+ POST /wapi/v1.2/record:host
+ Content-Type: application/json
+
+ { "name":"wapialiased.test.org",
+   "ipv4addrs":[ { "ipv4addr":"1.1.1.21"} ],
+   "aliases": [ "remote","pointer" ]
+ }
+
+Get all the aliases on a host
+
+  GET /wapi/v1.2/record:host?_return_fields%2B=aliases&name=wapialiased.test.org
+
+Remove or modify aliases from a host
+( send an enpty alias list, or a new list )
+( you need the _ref to the host first )
+
+ PUT /wapi/v1.2/record:host/ZG5zLmhvc3l9kZWZhdWx0Lm9yZy5naC53YXBpYWxpYXNlZA
+ Content-Type: application/json
+
+ {  
+   "aliases": [ ]
+ }
+
+Add a CNAME
+
+  POST /wapi/v1.2/record:cname
+  Content-Type: application/json
+
+  { 
+    "name":"cname.test.org",
+    "canonical" : "wapi.test.org"
+  }
+
+DELETE a CNAME
+( you need the _ref to the cname first )
+
+  DELETE /wapi/v1.2/record:cname/ZG5zLmJpbm...
+
+Move a cname to point to a new canonical
+( you need the _ref to the cname first )
+
+  PUT /wapi/v1.2/record:cname/ZG5zLmJpbmRfY
+  Content-Type: application/json
+
+  { 
+    "canonical" : "wapi-new.test.org"
+  }
+
+Add a network or a container
+( NIOS will auto create the container if it needs to )
+
+  POST /wapi/v1.2/network
+  Content-Type: application/json
+
+  {
+     "network": "45.0.45.0/24"
+  }
+
+Add a network and assign to a member
+
+  POST /wapi/v1.2/network
+  Content-Type: application/json
+  {
+     "network": "45.0.46.0/24",
+     "members": [
+        {
+           "_struct": "dhcpmember",
+           "ipv4addr" : "192.168.1.3"
+        }
+     ]
+  }
+
+Add a DHCP range
+
+  POST /wapi/v1.2/range
+  Content-Type: application/json
+  {
+     "start_addr": "45.0.46.20",
+     "end_addr": "45.0.46.101",
+     "server_association_type": "MEMBER" ,
+     "member": 
+        {
+           "_struct": "dhcpmember",
+           "ipv4addr" : "192.168.1.3"
+        }
+     
+  }
+
+Add a DHCP reserved range
+( If you don't assign a member, the range just gets created as 'reserved')
+
+  POST /wapi/v1.2/range
+  Content-Type: application/json
+  {
+     "start_addr": "45.0.46.20",
+     "end_addr": "45.0.46.101",
+  }
+
+Add a zone association to a network
+
+( 'is_default' is a BOOLEAN, so you don't quote the word 'true' )
+    PUT /wapi/v1.2/network/ZG5zLm5l...
+    Content-Type: application/json
+
+    {
+       "zone_associations": [
+            {
+               "fqdn": "test.org",
+               "is_default" : true
+            }
+       ]
+    }
+
+List the zone_associations on a network
+
+   GET /wapi/v1.2/network/ZG5zLm5l...?_return_fields%2B=zone_associations  
+
+Add a zone, of type forward
+
+'forwarding_servers' are the grid members that will forward for that zone
+
+    POST /wapi/v1.2.1/zone_forward
+
+    {
+        "fqdn": "foo.com", 
+        "forward_to": [
+            {"address": "1.1.1.1", "name": "ns.foo.com"},
+            {"address": "1.1.1.2", "name": "ns2.foo.com"}],
+        "forwarding_servers": [
+            {"name": "infoblox2.localdomain"},
+            {"name": "infoblox1.localdomain"}
+        ]
+    }'
+
+Get grid service status
+
+ GET /wapi/v1.4/grid
+
+ POST /wapi/v1.4/grid/b25lLmNsdXN0ZXIkMA:Infoblox?_function=requestrestartservicestatus
+ Content-Type: application/json
+
+  {"service_option": "All|DNS|DHCP"}
+
+Restart services
+
+ GET /wapi/v1.4/grid
+
+ POST /wapi/v1.4/grid/b25lLmNsdXN0ZXIkMA:Infoblox?_function=restartservices
+ Content-Type: application/json
+
+    {
+        "member_order" : "SIMULTANEOUSLY",
+        "service_option": "ALL"
+    }
+
+  {"service_option": "All|DNS|DHCP"}
+
+Export a database
+
+ POST /wapi/v1.4/fileop?_function=getgriddata
+ Content-Type: application/json
+
+    {"type": "BACKUP"}
+
+ GET /http_direct_file_io/...
+ Content-type: application/force-download
+
+  And remember to remove the stored file via the token
+
+ POST /wapi/v1.4/fileop?_function=downloadcomplete
+ Content-Type: application/json
+    
+    {"token": "eJydULFuwyAQ3e9...="}
+
+Export a CSV file
+
+ POST /wapi/v1.5/fileop?_function=csv_export
+ Content-Type: application/json
+
+    {"_object": "record:host"}
+
+ You will get back a URL for the download, and a token
+ for the download session. you can download the file directly
+ from the URL
+
+ GET /http_direct_file_io/...
+ Content-type: application/force-download
+
+  And remember to remove the stored file via the token
+
+ POST /wapi/v1.4/fileop?_function=downloadcomplete
+ Content-Type: application/json
+    
+    {"token": "eJydULFuwyAQ3e9...="}
+
+Export the results of a WAPI call 
+
+ and save the data to disk
+ (Yes, you can cache results )
+
+ POST /wapi/v1.5/fileop?_function=read
+ Content-Type: application/json
+
+    {
+     "_encoding"      : "JSON"
+     "_filename"      : "allhosts.corp.org.json"
+     "_object"        : "record:host"
+     "_return_fields" : "name,extattrs"
+     "zone"           : "corp.org"
+    }
+
+ The file will be in a folder 'wapi_output' in the HTTP file distribution

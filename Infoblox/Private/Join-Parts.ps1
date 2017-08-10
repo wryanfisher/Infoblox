@@ -9,5 +9,4 @@ function Join-Parts
     )
     $Separator = "/"
     ($Parts | Where { $_ } | Foreach { ([string]$_).trim($Separator) } | ? { $_ } ) -join $Separator
-    $parts -ne $Null -replace "^$Separator|$Separator$" -ne $null -join $Separator
 }
