@@ -266,7 +266,8 @@ Get-IBObject -ObjectType member:dns -ReturnAllFields | convertto-json
 
 
 ##############################
-> Get-IBObject -ObjectType zone_delegated -Filters 'fqdn=classic.blizzard.com' -ReturnAllFields  | convertto-json
+Get-IBObject -ObjectType zone_delegated -Filters 'fqdn=classic.blizzard.com' -ReturnAllFields  | convertto-json
+@"
 {
     "_ref":  "zone_delegated/ZG5zLnpvbmUkLl9kZWZhdWx0LmNvbS5ibGl6emFyZC5jbGFzc2lj:classic.blizzard.com/default",
     "comment":  "REQ000000397646",
@@ -307,6 +308,7 @@ Get-IBObject -ObjectType member:dns -ReturnAllFields | convertto-json
     "view":  "default",
     "zone_format":  "FORWARD"
 }
+"@
 
 # Request details:
 # RITM00534812
@@ -431,9 +433,7 @@ d.net/default",
     "view":  "default",
     "zone":  "corp.blizzard.net"
 }
-"@
 
-'@
 {
     "_ref":  "record:host/ZG5zLmhvc3QkLl9kZWZhdWx0Lm5ldC5ibGl6emFyZC5jb3JwLmlydmFwMTYw:irvap160.corp.blizzard.net/default",
     "aliases":  [
@@ -494,7 +494,7 @@ d.net/default",
     "view":  "default",
     "zone":  "corp.blizzard.net"
 }
-'@
+"@
 
 
 ############
@@ -920,12 +920,13 @@ $newhosts = $rhosts.foreach(
     }
     )
     
-    
-    Exadata Client SCAN IP
-    oc2-exa1-scan.corp.blizzard.net,10.133.144.22
-    oc2-exa1-scan.corp.blizzard.net,10.133.144.23
-    oc2-exa1-scan.corp.blizzard.net,10.133.144.24
-    
+@"
+Exadata Client SCAN IP
+oc2-exa1-scan.corp.blizzard.net,10.133.144.22
+oc2-exa1-scan.corp.blizzard.net,10.133.144.23
+oc2-exa1-scan.corp.blizzard.net,10.133.144.24
+"@
+
 $object = [pscustomobject]@{
     name = "oc2-exa1-scan.corp.blizzard.net"
     ipv4addrs = @(
@@ -1130,7 +1131,7 @@ foreach ($item in $aclViewDmz.access_list) {
 
 ######################################
 # Delegate a zone to ATT internally
-
+@"
 {
     "_ref":  "zone_delegated/ZG5zLnpvbmUkLl9kZWZhdWx0LmNvbS5ibGl6emFyZC5hY2NvdW50:account.blizzard.com/default",
     "delegate_to":  [
@@ -1146,6 +1147,8 @@ foreach ($item in $aclViewDmz.access_list) {
     "fqdn":  "account.blizzard.com",
     "view":  "default"
 }
+"@
+
 $zoneDelg = [pscustomobject]@{
     comment = 'RITM00537484'
     fqdn = 'integration.blizzard.com'
@@ -1225,6 +1228,9 @@ $members = -split @"
 $members.foreach(
     {[pscustomobject]@{_struct='addressac';permission='ALLOW';address="$_"}}
 )
+Get-IBObject -ObjectType namedacl -ReturnFields access_list -Filters 'name=allow address activision' |
+    %{ $_.access_list = $atviIP; $_ } |
+    Set-IBObject
 
 
 ##########################################
@@ -1258,3 +1264,232 @@ $old = Get-IBObject -ObjectType record:cname -Filters 'view=dmz&name~=web.blizza
 $zone = Get-IBObject -ObjectType zone_auth -Filters 'view=dmz&fqdn=web.blizzard.net' -ReturnFields fqdn,comment
 $zone | Remove-IBObject
 $old | Select Name,Canonical,comment | New-IBObject -ObjectType record:cname
+
+
+##################################
+# Get zones that match a forwarder string.
+Get-IBObject -ObjectType zone_forward | ?{$_.forward_to.name -match 'activision.com'} |% fqdn
+
+#######################
+# Get DNS members, test external resolution
+# 
+$dns = Get-IBObject -ObjectType member:dns -ReturnFields host_name,ipv4addr,forwarders,additional_ip_list,enable_dns |? enable_dns -eq $True
+$dns  |% { $h = $_.host_name; Resolve-DnsName -Server $_.ipv4addr -Name outlook.office365.com -Type A| select -Last 1 -Property @{n='host';e={$h}},Name  }
+
+
+################################
+# Change DHCP
+@"
+[
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjAuMC8yNS8w:10.136.0.0/25/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.136.8.10; ipv6addr=; name=usbisl-nsd001.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.136.8.10; ipv6addr=; name=usbisl-nsd001.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjcuMC8yNC8w:10.136.7.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjYuMTI4LzI1LzA:10.136.6.128/25/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjMuMC8yNi8w:10.136.3.0/26/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjYuMC8yNS8w:10.136.6.0/25/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjE2LjAvMjMvMA:10.136.16.0/23/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjIwLjAvMjIvMA:10.136.20.0/22/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjI0LjAvMjQvMA:10.136.24.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjI2LjAvMjQvMA:10.136.26.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjI4LjAvMjQvMA:10.136.28.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjQ0LjAvMjMvMA:10.136.44.0/23/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjQ4LjAvMjQvMA:10.136.48.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjQ5LjAvMjQvMA:10.136.49.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjUwLjAvMjQvMA:10.136.50.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjU0LjAvMjQvMA:10.136.54.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjU2LjAvMjIvMA:10.136.56.0/22/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjYwLjAvMjIvMA:10.136.60.0/22/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjEwLjAvMjQvMA:10.136.10.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjMwLjAvMjQvMA:10.136.30.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM0LjQuMC8yNC8w:10.134.4.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    },
+    {
+        "_ref":  "network/ZG5zLm5ldHdvcmskMTAuMTM2LjMyLjAvMjQvMA:10.136.32.0/24/default",
+        "members":  [
+                        "@{_struct=dhcpmember; ipv4addr=10.131.62.176; ipv6addr=; name=cdc-utl-107.blizzard.net}",
+                        "@{_struct=dhcpmember; ipv4addr=10.131.130.26; ipv6addr=; name=aus-utl-100.blizzard.net}"
+                    ]
+    }
+]
+"@
+
+
+
+$ns = @"
+av-infoblox820.activision.com
+abstudios-infoblox825-a.activision.com
+its-infoblox820-a.activision.com
+ukic1-infoblox820-dmz.activision.com
+ukic1-infoblox1410.activision.com
+euic2-infoblox820-a.activision.com
+pyrmont-infoblox810-a.activision.com
+auic1-infoblox810-dmz-a.activision.com
+auic1-infoblox810-a.activision.com
+raven-infoblox820-a.activision.com
+eden7800-infoblox820-a.activision.com
+bloomington-infoblox820-a.activision.com
+vv-infoblox820-a.activision.com
+usic7-infoblox820-dmz.activision.com
+usic7-infoblox820-a.activision.com
+highmoon-infoblox820-a.activision.com
+tfb-infoblox820.activision.com
+ta-infoblox820-a.activision.com
+iw-infoblox820-a.activision.com
+iwmocap-infoblox810-a.activision.com
+mocap-infoblox810-a.activision.com
+shermanoaks-infoblox825-a.activision.com
+esqa-infoblox820-a.activision.com
+beenox-infoblox820-a.activision.com
+usic2-infoblox820-a.activision.com
+usic2-infoblox1410-axfr.activision.com
+usic2-infoblox2220-gm.activision.com
+usic2-infoblox1410-dmz.activision.com
+amsterdam-infoblox825-a.activision.com
+usic3-infoblox1410-dmz.activision.com
+usic3-infoblox1410.activision.com
+sledgehammer-infoblox820-a.activision.com
+fresno1-infoblox810-a.activision.com
+spain-infoblox810-a.activision.com
+fresno-infoblox820-a.activision.com
+usic5-infoblox820-a.activision.com
+shanghai-infoblox825-vm.activision.com
+italy-infoblox820-a.activision.com
+cnic2-infoblox820-dmz.activision.com
+cnic2-infoblox820.activision.com
+cnic1-infoblox820-dmz.activision.com
+cnic1-infoblox825-vm.activision.com
+ditton-infoblox820-a.activision.com
+venlo-infoblox810-a.activision.com
+usic4-infoblox820-dmz.activision.com
+usic4-infoblox820.activision.com
+"@ -split "`n"
+
+$rxFail = '*** Request to av-infoblox820.activision.com timed-out'
+$rxpass = 'Name:    usbisl-prox002-tcp.xd2.blizzdmz.net'
+
+$ns | %{ nslookup dev8.bgs.battle.net }

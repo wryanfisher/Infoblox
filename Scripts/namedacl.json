@@ -1,0 +1,163 @@
+[
+    {
+        "name":  "allow subnet bungie",
+        "comment":  "Client subnets for Bungie studio",
+        "access_list":  [
+                            "@{_struct=addressac; address=172.20.20.0/24; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow subnet demonware",
+        "comment":  "Client subnets for DemonWare studio",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.32.0.0/16; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.175.0.0/16; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow address internal",
+        "comment":  "Internal IPs for testing non-default views.\nAdd your workstation to this and then add it to one of the \"allow project *\" ACLs.",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.130.60.161; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow subnet beenox",
+        "comment":  "Client subnets for Beenox studio",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.240.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.171.0.0/16; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow project viper",
+        "comment":  "Project ACLs for Project Viper",
+        "access_list":  [
+                            "@{_ref=namedacl/b25lLmRlZmluZWRfYWNsJDAuYWxsb3cgYWRkcmVzcyBpbnRlcm5hbA:allow%20address%20internal}",
+                            "@{_ref=namedacl/b25lLmRlZmluZWRfYWNsJDAuYWxsb3cgYWRkcmVzcyBhY3RpdmlzaW9u:allow%20address%20activision}",
+                            "@{_ref=namedacl/b25lLmRlZmluZWRfYWNsJDAuYWxsb3cgc3VibmV0IGJlZW5veA:allow%20subnet%20beenox}",
+                            "@{_ref=namedacl/b25lLmRlZmluZWRfYWNsJDAuYWxsb3cgc3VibmV0IGRlbW9ud2FyZQ:allow%20subnet%20demonware}",
+                            "@{_ref=namedacl/b25lLmRlZmluZWRfYWNsJDAuYWxsb3cgc3VibmV0IGhpZ2htb29u:allow%20subnet%20highmoon}",
+                            "@{_ref=namedacl/b25lLmRlZmluZWRfYWNsJDAuYWxsb3cgc3VibmV0IGluZmluaXR5d2FyZA:allow%20subnet%20infinityward}",
+                            "@{_ref=namedacl/b25lLmRlZmluZWRfYWNsJDAuYWxsb3cgc3VibmV0IHBtZw:allow%20subnet%20pmg}",
+                            "@{_ref=namedacl/b25lLmRlZmluZWRfYWNsJDAuYWxsb3cgc3VibmV0IHRyZXlhcmNo:allow%20subnet%20treyarch}"
+                        ]
+    },
+    {
+        "name":  "allow project bungie",
+        "comment":  null,
+        "access_list":  [
+                            "@{_ref=namedacl/b25lLmRlZmluZWRfYWNsJDAuYWxsb3cgc3VibmV0IGJ1bmdpZQ:allow%20subnet%20bungie}"
+                        ]
+    },
+    {
+        "name":  "allow address activision",
+        "comment":  "ATVI NS addresses",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.28.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.192.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.150.0.0/16; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.152.0.0/16; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow subnet highmoon",
+        "comment":  "Activision Infoblox member for Highmoon Studios\nhighmoon-infoblox820-a.activision.com",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.152.10.231; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.152.10.0/24; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow subnet infinityward",
+        "comment":  "Client subnets for Infinity Ward studio.",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.160.13.51; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.160.0.0/16; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow subnet pmg",
+        "comment":  "Activision headquarters Product Management Group",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.152.20.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.152.20.0/24; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow subnet treyarch",
+        "comment":  "TreyArch clients and DNS forwarder\nta-infoblox820-a.activision.com",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.150.5.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.150.0.0/16; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow address activision ALL",
+        "comment":  null,
+        "access_list":  [
+                            "@{_struct=addressac; address=10.10.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.17.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.28.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.38.40.50; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.38.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.40.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.61.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.62.40.50; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.62.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.100.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.110.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.113.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.114.2.249; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.122.40.50; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.122.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.129.207.231; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.141.2.210; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.150.5.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.160.13.51; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.161.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.162.2.10; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.163.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.164.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.171.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.192.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.192.65.110; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.192.65.120; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.192.230.50; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.216.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.220.40.50; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.220.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.222.2.25; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.223.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.224.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.225.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.227.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.231.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.233.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.234.40.50; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.234.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.235.40.50; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.235.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.236.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.237.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.240.40.50; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.240.65.100; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow subnet raven",
+        "comment":  "Raven clients and DNS forwarder\nraven-infoblox820-a.activision.com",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.100.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.100.0.0/16; permission=ALLOW}"
+                        ]
+    },
+    {
+        "name":  "allow pyrmont subnet",
+        "comment":  "Pyrmont clients and DNS forwarders\npyrmont-infoblox810-a.activision.com",
+        "access_list":  [
+                            "@{_struct=addressac; address=10.61.65.100; permission=ALLOW}",
+                            "@{_struct=addressac; address=10.61.0.0/16; permission=ALLOW}"
+                        ]
+    }
+]
